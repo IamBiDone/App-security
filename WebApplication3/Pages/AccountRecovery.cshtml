@@ -1,0 +1,26 @@
+﻿@page
+@model WebApplication3.Pages.AccountRecoveryModel
+@{
+
+    <div class="row justify-content-center align-items-center">
+
+        <div class="col-sm-12 col-md-12 col-lg-4">
+            <h1 class="mb-3">Enter Email </h1>
+
+            <form method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="All" class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label class="form-label" asp-for="EModel.Email">Enter your Email</label>
+                    <input type="Text" asp-for="EModel.Email" class="form-control" />
+                    <span asp-validation-for="EModel.Email" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <button type="submit" class="btn btn-primary">Send Verification</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+    }

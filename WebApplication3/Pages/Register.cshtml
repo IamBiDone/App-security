@@ -1,16 +1,85 @@
 ﻿@page
 @model WebApplication3.Pages.RegisterModel
 @{
+
 }
 
 <div class="container mt-5">
+	<head>
+		<script type="text/javascript">
+
+			function validate() {
+				var password = document.getElementById('tb_password').value;
+				var complexityStatus = "";
+				var score = checkPassword(password);
+
+				switch (score) {
+					case 1:
+						complexityStatus = "Very Weak";
+						break;
+					case 2:
+						complexityStatus = "Weak";
+						break;
+					case 3:
+						complexityStatus = "Medium";
+						break;
+					case 4:
+						complexityStatus = "Good";
+						break;
+					case 5:
+						complexityStatus = "Very Good";
+						break;
+				}
+
+				document.getElementById('lbl_pwdchecker').innerHTML = "Password Strength: " + complexityStatus + " (Score: " + score + "/5)";
+
+				if (score < 4) {
+					document.getElementById('lbl_pwdchecker').style.color = "red";
+				} else {
+					document.getElementById('lbl_pwdchecker').style.color = "green";
+				}
+			}
+
+			function checkPassword(password) {
+				let score = 0;
+
+				// Score 1: Min Password length of 8
+				if (password.length >= 8) {
+					score++;
+				}
+
+				// Score 2: Contains lowercase letter(s)
+				if (/[a-z]/.test(password)) {
+					score++;
+				}
+
+				// Score 3: Contains uppercase letter(s)
+				if (/[A-Z]/.test(password)) {
+					score++;
+				}
+
+				// Score 4: Contains numeral(s)
+				if (/\d/.test(password)) {
+					score++;
+				}
+
+				// Score 5: Contains special character(s)
+				const specialCharacters = "!#$%^&*()-_=+[]{}|;:'<>,.?/";
+				if (Array.from(password).some(c => specialCharacters.includes(c))) {
+					score++;
+				}
+
+				return score;
+			}
+		</script>
+	</head>
 
 	<div class="row justify-content-center align-items-center">
 
 		<div class="col-sm-12 col-md-12 col-lg-4">
 			<h1 class="mb-3">Register </h1>
 
-			<form method="post">
+			<form method="post" enctype="multipart/form-data">
 				<div asp-validation-summary="All" class="text-danger"></div>
 
 				<div class="mb-3">
@@ -19,16 +88,48 @@
 					<span asp-validaton-for="RModel.Email" class="text-danger"></span>
 				</div>
 
+				<div>
+					<label class="form-label" asp-for="RModel.Gender">Gender</label>
+					<input type="text" asp-for="RModel.Gender" class="form-control" />
+					<span asp-validaton-for="RModel.Gender" class="text-danger"></span>
+				</div>
+
+				<div>
+					<label class="form-label" asp-for="RModel.AboutMe">About Me</label>
+					<input type="text" asp-for="RModel.AboutMe" class="form-control" />
+					<span asp-validaton-for="RModel.AboutMe" class="text-danger"></span>
+				</div>
+
+				<div>
+					<label class="form-label" asp-for="RModel.DeliveryAddress">Delivery Address</label>
+					<input type="text" asp-for="RModel.DeliveryAddress" class="form-control" />
+					<span asp-validaton-for="RModel.DeliveryAddress" class="text-danger"></span>
+				</div>
+
+				<div>
+					<label class="form-label" asp-for="RModel.MobileNumber">Mobile Number</label>
+					<input type="number" asp-for="RModel.MobileNumber" class="form-control" />
+					<span asp-validaton-for="RModel.MobileNumber" class="text-danger"></span>
+				</div>
+
 				<div class="mb-3">
 					<label class="form-label" asp-for="RModel.Password">Password</label>
-					<input type="Text" asp-for="RModel.Password" class="form-control" />
-					<span asp-validaton-for="RModel.Password" class="text-danger"></span>
+					<div id="lbl_pwdchecker">Password Strength: None</div>
+					<input id="tb_password" type="text" asp-for="RModel.Password" class="form-control" onkeyup="validate()" />
+					<span asp-validation-for="RModel.Password" class="text-danger"></span>
 				</div>
 
 				<div class="mb-3">
 					<label class="form-label" asp-for="RModel.ConfirmPassword">Confirm Password</label>
 					<input type="Text" asp-for="RModel.ConfirmPassword" class="form-control" />
 					<span asp-validaton-for="RModel.ConfirmPassword" class="text-danger"></span>
+				</div>
+			
+
+				<div class="mb-3">
+					<label class="form-label" asp-for="RModel.Photo">Upload Photo</label>
+					<input type="file" asp-for="RModel.Photo" class="form-control" accept=".jpg"/>
+					<span asp-validaton-for="RModel.Photo" class="text-danger"></span>
 				</div>
 
 				<div class="mb-3">

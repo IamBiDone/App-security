@@ -6,8 +6,22 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddDbContext<AuthDbContext>();
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<AuthDbContext>();
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    // Configure other options
+
+    // Configure token providers
+    options.Tokens.ProviderMap["Default"] = new TokenProviderDescriptor(typeof(IUserTwoFactorTokenProvider<ApplicationUser>));
+})
+    .AddEntityFrameworkStores<AuthDbContext>()
+    .AddDefaultTokenProviders();
 builder.Services.AddDataProtection();
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+builder.Services.AddDistributedMemoryCache(); // Save session in memory
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(1); // Set session timeout to 2 minutes
+});
 
 var app = builder.Build();
 
@@ -22,12 +36,15 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+app.UseSession();
+
 app.UseRouting();
-
 app.UseAuthentication();
-
 app.UseAuthorization();
 
+// Map the Razor Pages
 app.MapRazorPages();
+
+app.UseStatusCodePagesWithRedirects("/errors/{0}");
 
 app.Run();

@@ -1,10 +1,52 @@
 ﻿@page
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @model IndexModel
+
 @{
     ViewData["Title"] = "Home page";
-}
+    if (HttpContext.Session.GetString("UserID") != null)
+    {
+        <style>
+            ul {
+                list-style-type: none; /* Remove default bullet points */
+                padding: 0; /* Remove default padding */
+                margin: 0; /* Remove default margin */
+            }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+            li {
+                margin-bottom: 10px; /* Add some spacing between list items */
+            }
+        </style>
+
+        <div class="text-center">
+            <h1 class="display-4">Welcome</h1>
+            <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+
+            @if (HttpContext.Session.GetString("UserID") != null)
+            {
+                <p>Welcome, @HttpContext.Session.GetString("FullName")!</p>
+                <ul>
+                    <li>User ID: @HttpContext.Session.GetString("UserID")</li>
+                    <li>Email: @HttpContext.Session.GetString("Email")</li>
+                    <li>Phone Number: @HttpContext.Session.GetString("PhoneNumber")</li>
+                    <li>Delivery Address: @HttpContext.Session.GetString("DeliveryAddress")</li>
+                    <li>About Me: @HttpContext.Session.GetString("AboutMe")</li>
+                    <li>Credit Card Details: @HttpContext.Session.GetString("CreditCard")</li>
+                    <li>Gender: @HttpContext.Session.GetString("Gender")</li>
+                </ul>
+
+                <form method="post" asp-page-handler="Logout">
+                    <button type="submit" class="btn btn-danger">Logout</button>
+
+                </form>
+
+            }
+        </div>
+
+    }
+    else
+    {
+        HttpContext.Session.Clear();
+        Response.Redirect("/login");
+    }
+}
