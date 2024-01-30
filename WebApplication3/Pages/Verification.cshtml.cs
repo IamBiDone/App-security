@@ -17,8 +17,8 @@ namespace WebApplication3.Pages
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly AuthDbContext _authDbContext;
         private readonly Random _random = new Random();
-
-        [BindProperty]
+		private readonly IDataProtectionProvider dataProtectionProvider;
+		[BindProperty]
         public Verification VModel { get; set; }
         public VerificationModel(SignInManager<ApplicationUser> signInManager, IHttpContextAccessor httpContextAccessor, UserManager<ApplicationUser> userManager, AuthDbContext authDbContext)
         {
@@ -26,44 +26,13 @@ namespace WebApplication3.Pages
             _httpContextAccessor = httpContextAccessor;
             _userManager = userManager;
             _authDbContext = authDbContext;
-        }
+		}
 
         public async Task OnGet()
         {
         }
 
 
-
-        private async Task<int> GenerateOTP()
-        {
-            // Generate a random 2-digit OTP
-            int otp = _random.Next(10, 100);
-
-            return otp;
-        }
-
-        private async Task SendOTPEmail(string email, int otp)
-        {
-            // Send the OTP to the user's email
-            var smtpClient = new SmtpClient("smtp.gmail.com")
-            {
-                Port = 587,
-                Credentials = new NetworkCredential("t8406480@gmail.com", "ioqc qyvx nvxv nipv"),
-                EnableSsl = true,
-            };
-
-            var mailMessage = new MailMessage
-            {
-                From = new MailAddress("t8406480@gmail.com"),
-                Subject = "Two-Factor Authentication OTP",
-                Body = $"Your OTP for Two-Factor Authentication is: {otp}",
-                IsBodyHtml = false,
-            };
-
-            mailMessage.To.Add(email);
-
-            await smtpClient.SendMailAsync(mailMessage);
-        }
 
         public async Task<IActionResult> OnPost()
         {
@@ -82,10 +51,19 @@ namespace WebApplication3.Pages
 
                 if (enteredOTP == storedOTP)
                 {
+					var dataProtectionProvider = DataProtectionProvider.Create("EncryptData");
+					var protector = dataProtectionProvider.CreateProtector("mySecretKey");
+					var decryptedCreditCard = protector.Unprotect(user.CreditCard);
 
-                    HttpContext.Session.SetString("Authorization", "Authorized");
-
-                    await _signInManager.SignInAsync(user, isPersistent: false);
+					HttpContext.Session.SetString("Authorization", "Authorized");
+					HttpContext.Session.SetString("UserID", user.Id);
+					HttpContext.Session.SetString("FullName", user.FullName);
+					HttpContext.Session.SetString("PhoneNumber", user.PhoneNumber.ToString());
+					HttpContext.Session.SetString("Gender", user.Gender);
+					HttpContext.Session.SetString("CreditCard", decryptedCreditCard);
+					HttpContext.Session.SetString("DeliveryAddress", user.DeliveryAddress);
+					HttpContext.Session.SetString("AboutMe", user.AboutMe);
+					await _signInManager.SignInAsync(user, isPersistent: false);
 
                     await LogActivityAsync(user.Id, "User successfully verified using OTP.");
 

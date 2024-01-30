@@ -2,9 +2,9 @@
 {
     public class PasswordHistory
     {
-        public int Id { get; set; } // Primary key
-        public string UserId { get; set; } // Foreign key referencing the user
-        public string HashedPassword { get; set; } // Hashed version of the password
-        public DateTime CreatedAt { get; set; } // Timestamp when the password was added (optional)
+        public int Id { get; set; } 
+        public string UserId { get; set; } 
+        public string HashedPassword { get; set; }
+        public DateTime CreatedAt { get; set; } 
     }
 }

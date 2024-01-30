@@ -36,18 +36,43 @@ namespace WebApplication3.Pages
                         ModelState.AddModelError("PModel.Password", "Password change is still on cooldown");
                         return Page();
                     }
-                
+
                     try
                     {
+                        var pastPasswords = _authDbContext.PasswordHistories
+                            .Where(ph => ph.UserId == user.Id)
+                            .OrderByDescending(ph => ph.CreatedAt)
+                            .Take(2) 
+                            .Select(ph => ph.HashedPassword)
+                            .ToList();
+
+                        var newPasswordHash = _userManager.PasswordHasher.HashPassword(user, PModel.Password);
+
+
+                        if (pastPasswords.Any(hash => _userManager.PasswordHasher.VerifyHashedPassword(user, hash, PModel.Password) != PasswordVerificationResult.Failed))
+                        {
+                            ModelState.AddModelError("PModel.Password", "The new password cannot be one of the past two passwords.");
+                            return Page();
+                        }
+
                         var result = await _userManager.ResetPasswordAsync(user, PModel.ResetToken, PModel.Password);
 
                         if (result.Succeeded)
                         {
+                            var newPasswordHistory = new PasswordHistory
+                            {
+                                UserId = user.Id,
+                                HashedPassword = _userManager.PasswordHasher.HashPassword(user, PModel.Password),
+                                CreatedAt = DateTime.UtcNow
+                            };
+
+                            _authDbContext.PasswordHistories.Add(newPasswordHistory);
+                            await _authDbContext.SaveChangesAsync();
+
                             await LogActivityAsync(user.Id, "User Password resetted");
-                            // Set the cooldown period before calling ResetPasswordAsync
                             user.PasswordChangeMin = DateTime.UtcNow.AddMinutes(6);
                             user.PasswordChangeLimit = DateTime.UtcNow.AddMinutes(1);
-
+                            await _userManager.UpdateAsync(user);
                             return RedirectToPage("/Login");
                         }
                         else

@@ -20,7 +20,7 @@ builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddDistributedMemoryCache(); // Save session in memory
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(1); // Set session timeout to 2 minutes
+    options.IdleTimeout = TimeSpan.FromSeconds(20); // Set session timeout to 2 minutes
 });
 
 var app = builder.Build();

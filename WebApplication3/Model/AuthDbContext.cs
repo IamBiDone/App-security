@@ -13,7 +13,7 @@ namespace WebApplication3.Model
         }
 
         public DbSet<Audit> AuditLogs { get; set; }
-
+        public DbSet<PasswordHistory> PasswordHistories { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             string connectionString = _configuration.GetConnectionString("AuthConnectionString");
@@ -25,7 +25,7 @@ namespace WebApplication3.Model
             base.OnModelCreating(modelBuilder);
 
             // Configure other entities...
-
+            modelBuilder.Entity<PasswordHistory>().ToTable("PasswordHistory");
             modelBuilder.Entity<Audit>().ToTable("AuditLog");
         }
     }

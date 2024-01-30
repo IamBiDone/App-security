@@ -17,21 +17,22 @@ using WebApplication3.ViewModels;
         {
 
 		private readonly IHttpContextAccessor contxt;
-
-		private UserManager<ApplicationUser> userManager { get; }
+        private readonly AuthDbContext authDbContext;
+        private UserManager<ApplicationUser> userManager { get; }
             private SignInManager<ApplicationUser> signInManager { get; }
 
 		[BindProperty]
             public Register RModel { get; set; }
 
             public RegisterModel(UserManager<ApplicationUser> userManager,
-
+                AuthDbContext authDbContext,
             SignInManager<ApplicationUser> signInManager)
             {
                 this.userManager = userManager;
                 this.signInManager = signInManager;
+            this.authDbContext = authDbContext;
 
-		}
+        }
 
 		private bool IsJpeg(IFormFile file)
 		{
@@ -63,14 +64,14 @@ using WebApplication3.ViewModels;
         }
         private bool IsValidPhoneNumber(string phoneNumber)
         {
-            // Customize the regular expression based on your requirements
+
             var phoneRegex = new Regex(@"^[0-9]{8}$");
 
             return phoneRegex.IsMatch(phoneNumber);
         }
         private bool IsValidCredit(string creditCard)
         {
-            // Customize the regular expression based on your requirements
+
             var creditRegex = new Regex("(?<!\\d)\\d{16}(?!\\d)|(?<!\\d[ _-])(?<!\\d)\\d{4}(?:[_ -]\\d{4}){3}(?![_ -]?\\d)");
 
             return creditRegex.IsMatch(creditCard);
@@ -136,8 +137,18 @@ using WebApplication3.ViewModels;
                     var result = await userManager.CreateAsync(user, RModel.Password);
                     if (result.Succeeded)
                     {
-                        await signInManager.SignInAsync(user, false);
-                        return RedirectToPage("Login");
+                    var passwordHistory = new PasswordHistory
+                    {
+                        UserId = user.Id,
+                        HashedPassword = user.PasswordHash, 
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    authDbContext.PasswordHistories.Add(passwordHistory);
+                    await authDbContext.SaveChangesAsync();
+
+                    await signInManager.SignInAsync(user, false);
+                        return RedirectToPage("/Login");
                     }
                     foreach (var error in result.Errors)
                     {
